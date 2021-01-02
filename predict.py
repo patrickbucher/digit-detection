@@ -10,7 +10,7 @@ inputs, labels, labels_1hot, (K, m, n) = load_input('predict.csv')
 
 weights_file = 'weights.csv'
 thetas = np.loadtxt(weights_file, delimiter=',')
-print(f'loaded weights {thetas} from {weights_file}')
+print(f'loaded weights from {weights_file}')
 
 for i in range(len(inputs)):
     image = inputs[i,:]
@@ -23,4 +23,4 @@ for i in range(len(inputs)):
     print(f'prediction: {top_i} with {top * 100:.3f}%')
     for k in range(len(ps)):
         p = np.squeeze(ps[k])
-        print(f'P({k}) = {p * 100:7.3f}%')
+        print(f'\tP({k}) = {p * 100:7.3f}%')

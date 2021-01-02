@@ -46,4 +46,4 @@ for k in range(K):
 
 weights_file = 'weights.csv'
 np.savetxt(weights_file, thetas, delimiter=',')
-print(f'saved weights {theta} as CSV to {weights_file}')
+print(f'saved weights as CSV to {weights_file}')
