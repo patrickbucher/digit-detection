@@ -6,13 +6,8 @@ import imageio
 import numpy as np
 import pandas as pd
 
-
-def normalize(x):
-    return (x - x.mean()) / x.std()
-
-
-def sigmoid(z):
-    return 1 / (1 + np.exp(-z))
+from common import normalize
+from common import sigmoid
 
 
 labels = pd.read_csv('train.csv')
@@ -36,7 +31,7 @@ iters = int(20_000)
 
 X = normalize(inputs)
 for k in range(K):
-    print(f'train classifier {k} with {m} examplex for {iters} iterations')
+    print(f'train classifier {k} with {m} examples for {iters} iterations')
     theta = thetas[k].reshape(n, 1)
     Y = labels_1hot[k].reshape(m, 1)
     for i in range(iters):
