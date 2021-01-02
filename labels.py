@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 
 import os
+import sys
 
-with open('labels.csv', 'w') as csv:
-    directory = 'png'
+# usage: ./labels.py [directory] [csv_file]
+
+directory = sys.argv[1]
+csv_file = sys.argv[2]
+with open(csv_file, 'w') as csv:
     csv.write('path,digit\n')
     for f in sorted(os.listdir(directory)):
         path = os.path.join(directory, f)
