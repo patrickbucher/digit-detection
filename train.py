@@ -7,41 +7,65 @@ import numpy as np
 import pandas as pd
 
 
-labels = pd.read_csv('labels.csv')
-labels['image'] = labels['path'].apply(lambda p: imageio.imread(p))
+def normalize(x):
+    return (x - x.mean()) / x.std()
 
-goals = pd.DataFrame({
-    'path': [os.path.join('png', f'{d}.png') for d in range(10)],
-    'digit': list(range(10)),
-})
-goals['image'] = goals['path'].apply(lambda p: imageio.imread(p))
 
-train = labels[labels.index % 5 != 0]
-valid = labels[labels.index % 5 == 0]
+def sigmoid(z):
+    return 1 / (1 + np.exp(-z))
 
-image_shape = train.iloc[0]['image'].shape
-weights = np.zeros(image_shape, dtype=np.double)
 
-alpha = 1e-6
+labels = pd.read_csv('train.csv')
 
-for i in range(1):
-    for j in range(len(train)):
-        image = train.iloc[j]['image']
-        goal_digit = train.iloc[j]['digit']
-        goal = goals.iloc[goal_digit]['image']
+images = labels['path'].apply(lambda p: imageio.imread(p).flatten()).to_numpy()
+inputs = np.zeros((len(images), len(images[0])))
+for i, image in enumerate(images):
+    inputs[i,:] = image
 
-        # FIXME: create one probability prediction per outcome
-        prediction = image.dot(weights)
-        delta = goal - prediction 
+m, n = inputs.shape
 
-        weight_delta = delta * image
-        adjustment = alpha * weight_delta
-        weights += adjustment
+labels = labels['digit']
+K = len(set(labels.values))
 
-print(weights)
+classes = list(range(K))
+labels_1hot = {l: (labels == l).astype(int).to_numpy() for l in classes}
 
-for i in range(len(valid)):
-    image = valid.iloc[i]['image']
-    digit = valid.iloc[i]['digit']
+thetas = np.random.rand(K, n)
+alpha = 1e-3
+iters = int(20_000)
 
-    # TODO: predict
+X = normalize(inputs)
+for k in range(K):
+    print(f'train classifier {k} with {m} examplex for {iters} iterations')
+    theta = thetas[k].reshape(n, 1)
+    Y = labels_1hot[k].reshape(m, 1)
+    for i in range(iters):
+
+        z = X.dot(theta)
+        a = sigmoid(z)
+
+        diff = a - Y
+        grad = X.T.dot(diff)
+        theta -= (alpha / m) * grad
+
+        if i == iters - 1:
+            pass
+            # TODO: calculate cost
+            # j = (1 / m) * np.sum((Y * np.log(a)) + ((1 - Y) * np.log(1 - a)))
+
+    thetas[k,:] = theta.reshape(n)
+
+# TODO: split train/test data set
+for k in range(K):
+    theta = thetas[k]
+    predictions = sigmoid(X.dot(theta)).round()
+    comparison = predictions == labels_1hot[k]
+    correct = np.sum(comparison.astype(int))
+    total = len(comparison)
+    accuracy = correct / total
+    percentage = 100 * accuracy
+    print(f'accuracy for digit {k}: {percentage:.2f}%')
+
+weights_file = 'weights.csv'
+np.savetxt(weights_file, thetas, delimiter=',')
+print(f'saved weights {theta} as CSV to {weights_file}')
